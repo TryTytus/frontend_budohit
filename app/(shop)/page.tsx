@@ -2,7 +2,6 @@ import { Suspense } from "react";
 import { getProducts, getCategories } from "@/lib/api";
 import { ProductCard } from "@/components/shop/product-card";
 import { CategoryTree } from "@/components/shop/category-tree";
-import { Header } from "@/components/layout/header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 
@@ -34,7 +33,6 @@ export default async function Home({
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
 
       <main className="flex-1 container py-8">
         <section className="flex flex-col lg:flex-row gap-8">

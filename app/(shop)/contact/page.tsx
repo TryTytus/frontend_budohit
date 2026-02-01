@@ -1,4 +1,3 @@
-import { Header } from "@/components/layout/header";
 import { Separator } from "@/components/ui/separator";
 import { Mail, Phone, MapPin, Clock, CreditCard, Building2, Globe } from "lucide-react";
 import Link from "next/link";
@@ -6,8 +5,6 @@ import Link from "next/link";
 export default function ContactPage() {
     return (
         <div className="min-h-screen flex flex-col">
-            <Header />
-
             <main className="container py-12 flex-1">
                 <div className="max-w-4xl mx-auto space-y-12">
 

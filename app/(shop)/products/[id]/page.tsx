@@ -1,5 +1,4 @@
 import { getProduct } from "@/lib/api";
-import { Header } from "@/components/layout/header";
 import { ProductGallery } from "@/components/shop/product-gallery";
 import { ProductSpecifications } from "@/components/shop/product-specifications";
 import { Button } from "@/components/ui/button";
@@ -20,8 +19,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
     return (
         <div className="min-h-screen flex flex-col">
-            <Header />
-
             <main className="container py-8">
 
                 {/* Breadcrumbs */}

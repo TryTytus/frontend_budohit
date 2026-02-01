@@ -69,7 +69,7 @@ const SelectValue = React.forwardRef<
 
 const SelectContent = React.forwardRef<
     HTMLDivElement,
-    React.HTMLAttributes<HTMLDivElement>
+    React.HTMLAttributes<HTMLDivElement> & { position?: "popper" | "item-aligned" }
 >(({ className, children, position = "popper", ...props }, ref) => {
     const context = React.useContext(SelectContext);
     if (!context?.open) return null;

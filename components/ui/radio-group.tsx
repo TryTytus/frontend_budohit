@@ -12,7 +12,8 @@ const RadioGroup = React.forwardRef<
         <div className={cn("grid gap-2", className)} ref={ref} {...props}>
             {React.Children.map(children, (child) => {
                 if (React.isValidElement(child)) {
-                    return React.cloneElement(child as React.ReactElement<any>, { checked: child.props.value === value, onChange: onValueChange });
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    return React.cloneElement(child as React.ReactElement<any>, { checked: (child.props as any).value === value, onChange: onValueChange });
                 }
                 return child;
             })}

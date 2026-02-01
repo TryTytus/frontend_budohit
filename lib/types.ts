@@ -15,7 +15,8 @@ export interface Category {
 
 export interface ProductImage {
   id: number;
-  image_url: string;
+  url: string;
+  image_url: string; // Restored for compatibility
   order: number;
 }
 
@@ -41,6 +42,7 @@ export interface Product {
   description: string;
   short_description: string;
   currency: string;
+  vat: string; // Added field
   vat_value: string;
   price_netto: string; // Decimal comes as string from DRF usually unless coerced
   price_brutto: string;
