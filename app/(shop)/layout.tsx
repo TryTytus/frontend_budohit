@@ -11,10 +11,10 @@ export default async function ShopLayout({
     const categories = await getCategories();
 
     return (
-        <CartProvider>
+        <>
             <Header categories={categories} />
             {children}
             <CartSheet />
-        </CartProvider>
+        </>
     );
 }

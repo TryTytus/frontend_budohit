@@ -15,32 +15,42 @@ interface AddToCartProps {
 }
 
 export function AddToCart({ product, minQty = 1, maxQty = 999, uom = "szt." }: AddToCartProps) {
-    const [quantity, setQuantity] = useState(minQty);
+    const [quantity, setQuantity] = useState<string | number>(minQty);
     const { addItem } = useCart();
 
     const handleIncrement = () => {
-        if (quantity < maxQty) {
-            setQuantity(prev => Number(prev) + 1);
-        }
+        setQuantity(prev => Number(prev) + 1)
     };
 
     const handleDecrement = () => {
-        if (quantity > minQty) {
-            setQuantity(prev => Number(prev) - 1);
-        }
+        setQuantity(prev => {
+            const val = Number(prev);
+            if (val > minQty) return val - 1;
+            return val;
+        });
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
-        const val = Number(value);
-        // Allow updating if it's a number. We don't restrict minQty here to allow typing (e.g. deleting to type new number)
+        if (value === "") {
+            setQuantity("");
+            return;
+        }
+        const val = parseInt(value);
         if (!isNaN(val)) {
             setQuantity(val);
         }
     };
 
+    const handleBlur = () => {
+        let val = Number(quantity);
+        if (isNaN(val) || val < minQty) val = minQty;
+        if (maxQty > 0 && val > maxQty) val = maxQty;
+        setQuantity(val);
+    };
+
     const handleAddToCart = () => {
-        addItem(product, quantity);
+        addItem(product, Number(quantity));
     };
 
     return (
@@ -52,7 +62,7 @@ export function AddToCart({ product, minQty = 1, maxQty = 999, uom = "szt." }: A
                         size="icon"
                         className="h-10 w-10 rounded-r-none"
                         onClick={handleDecrement}
-                        disabled={quantity <= minQty}
+                        disabled={Number(quantity) <= minQty}
                     >
                         <Minus className="h-4 w-4" />
                     </Button>
@@ -60,6 +70,7 @@ export function AddToCart({ product, minQty = 1, maxQty = 999, uom = "szt." }: A
                         type="number"
                         value={quantity}
                         onChange={handleChange}
+                        onBlur={handleBlur}
                         className="h-10 w-16 border-0 text-center focus-visible:ring-0 rounded-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     />
                     <Button
@@ -67,7 +78,7 @@ export function AddToCart({ product, minQty = 1, maxQty = 999, uom = "szt." }: A
                         size="icon"
                         className="h-10 w-10 rounded-l-none"
                         onClick={handleIncrement}
-                        disabled={maxQty > 0 && quantity >= maxQty}
+                        disabled={maxQty > 0 && Number(quantity) >= maxQty}
                     >
                         <Plus className="h-4 w-4" />
                     </Button>

@@ -4,6 +4,7 @@ import { ProductCard } from "@/components/shop/product-card";
 import { CategoryTree } from "@/components/shop/category-tree";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
+import { Pagination } from "@/components/ui/pagination-controls";
 
 // Re-validate every hour or on-demand
 export const revalidate = 3600;
@@ -71,15 +72,11 @@ export default async function Home({
               </div>
             )}
 
-            {/* Simple Pagination Control - could be improved */}
-            <div className="mt-8 flex justify-center gap-2">
-              {productsData.previous && (
-                <a href={`/?page=${getPageNumber(productsData.previous)}`} className="btn btn-outline">Poprzednia</a>
-              )}
-              {productsData.next && (
-                <a href={`/?page=${getPageNumber(productsData.next)}`} className="btn btn-outline">Następna</a>
-              )}
-            </div>
+            {/* Pagination */}
+            <Pagination
+              totalPages={Math.ceil(productsData.count / 20)}
+              className="mt-8"
+            />
           </div>
         </section>
       </main>

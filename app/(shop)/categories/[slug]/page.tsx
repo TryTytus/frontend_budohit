@@ -1,6 +1,7 @@
 import { getCategory, getProducts, getCategories } from "@/lib/api";
 import { CategoryCard } from "@/components/shop/category-card";
 import { ProductCard } from "@/components/shop/product-card";
+import { Pagination } from "@/components/ui/pagination-controls";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator, BreadcrumbPage } from "@/components/ui/breadcrumb";
 import { CategoryTree } from "@/components/shop/category-tree";
 import { Separator } from "@/components/ui/separator";
@@ -104,18 +105,10 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
 
                                 {/* Pagination for products */}
                                 {products && (products.previous || products.next) && (
-                                    <div className="flex justify-center gap-2 mt-8">
-                                        {products.previous && (
-                                            <Link href={`/categories/${slug}?page=${getPageNumber(products.previous)}`} className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
-                                                Poprzednia
-                                            </Link>
-                                        )}
-                                        {products.next && (
-                                            <Link href={`/categories/${slug}?page=${getPageNumber(products.next)}`} className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
-                                                Następna
-                                            </Link>
-                                        )}
-                                    </div>
+                                    <Pagination
+                                        totalPages={Math.ceil(products.count / 20)}
+                                        className="mt-8"
+                                    />
                                 )}
                             </div>
                         )}

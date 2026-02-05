@@ -29,7 +29,7 @@ export function ProductForm({ product, isEdit = false }: ProductFormProps) {
     const [code, setCode] = useState(product?.code || "");
     const [description, setDescription] = useState(product?.description || "");
     const [priceNetto, setPriceNetto] = useState(product?.price_netto || "");
-    const [vat, setVat] = useState(product?.vat || "23");
+    const [vat, setVat] = useState(product?.vat_value?.toString() || "23");
     const [categoryId, setCategoryId] = useState<string>(product?.category?.id?.toString() || "");
     const [producerId, setProducerId] = useState<string>(product?.producer?.id?.toString() || "");
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -57,11 +57,16 @@ export function ProductForm({ product, isEdit = false }: ProductFormProps) {
         setLoading(true);
 
         const formData = new FormData();
+        const price = parseFloat(priceNetto) || 0;
+        const vatRate = parseFloat(vat) || 0;
+        const brutto = (price * (1 + vatRate / 100)).toFixed(2);
+
         formData.append("name", name);
         formData.append("code", code);
         formData.append("description", description);
         formData.append("price_netto", priceNetto);
-        formData.append("vat", vat);
+        formData.append("price_brutto", brutto);
+        formData.append("vat_value", vat);
         if (categoryId) formData.append("category", categoryId); // API expects ID for FK
         if (producerId) formData.append("producer", producerId);
 

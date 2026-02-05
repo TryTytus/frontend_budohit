@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { loginAdmin } from "@/lib/api";
+import { loginAdmin, checkAdminAuth } from "@/lib/api";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Lock, User, Loader2, ArrowRight } from "lucide-react";
@@ -14,6 +14,11 @@ export default function AdminLoginPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const router = useRouter();
+
+    useEffect(() => {
+        // Prime the CSRF cookie
+        checkAdminAuth();
+    }, []);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();

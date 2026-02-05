@@ -4,13 +4,19 @@ const API_URL = "http://localhost:8000/api";
 
 // --- Auth API ---
 export async function loginAdmin(credentials: { username: string, password: string }): Promise<boolean> {
-  const res = await fetch(`${API_URL}/auth/login/`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(credentials),
-    credentials: "include", // Important for cookies
-  });
-  return res.ok;
+    const headers: HeadersInit = { "Content-Type": "application/json" };
+    const csrfToken = getCookie("csrftoken");
+    if (csrfToken) {
+        headers["X-CSRFToken"] = csrfToken;
+    }
+
+    const res = await fetch(`${API_URL}/auth/login/`, {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify(credentials),
+        credentials: "include", // Important for cookies
+    });
+    return res.ok;
 }
 
 export async function logoutAdmin(): Promise<void> {
@@ -104,19 +110,26 @@ function getCookie(name: string) {
   return cookieValue;
 }
 
-const authHeaders = () => {
-    const headers: HeadersInit = {};
+// Helper for authorized requests
+async function authorizedFetch(url: string, options: RequestInit = {}) {
+    const headers = new Headers(options.headers || {});
+    
+    // Add CSRF token
     const csrfToken = getCookie('csrftoken');
     if (csrfToken) {
-        headers['X-CSRFToken'] = csrfToken;
+        headers.set('X-CSRFToken', csrfToken);
     }
-    return headers;
+
+    return fetch(url, {
+        ...options,
+        headers,
+        credentials: "include", // Always include cookies for session auth
+    });
 }
 
 export async function createProduct(formData: FormData): Promise<Product> {
-    const res = await fetch(`${API_URL}/products/`, {
+    const res = await authorizedFetch(`${API_URL}/products/`, {
         method: "POST",
-        headers: authHeaders(),
         body: formData,
     });
     if (!res.ok) throw new Error("Failed to create product");
@@ -124,9 +137,8 @@ export async function createProduct(formData: FormData): Promise<Product> {
 }
 
 export async function updateProduct(id: number, formData: FormData): Promise<Product> {
-    const res = await fetch(`${API_URL}/products/${id}/`, {
-        method: "PUT", // or PATCH
-        headers: authHeaders(),
+    const res = await authorizedFetch(`${API_URL}/products/${id}/`, {
+        method: "PUT",
         body: formData,
     });
     if (!res.ok) throw new Error("Failed to update product");
@@ -134,9 +146,8 @@ export async function updateProduct(id: number, formData: FormData): Promise<Pro
 }
 
 export async function deleteProduct(id: number): Promise<void> {
-    const res = await fetch(`${API_URL}/products/${id}/`, {
+    const res = await authorizedFetch(`${API_URL}/products/${id}/`, {
         method: "DELETE",
-        headers: authHeaders(),
     });
     if (!res.ok) throw new Error("Failed to delete product");
 }
