@@ -138,7 +138,7 @@ export function SearchBar() {
                                             <div className="w-10 h-10 relative rounded overflow-hidden bg-white border shrink-0">
                                                 {prod.images && prod.images.length > 0 ? (
                                                     <Image
-                                                        src={processUrl(prod.images[0].url)}
+                                                        src={processUrl(prod.images[0].image_url)}
                                                         alt={prod.name}
                                                         fill
                                                         className="object-contain p-1"
@@ -176,7 +176,11 @@ export function SearchBar() {
 }
 
 // Helper to handle absolute urls or legacy paths
-function processUrl(url: string) {
+
+function processUrl(url: string | null | undefined) {
+    console.log(url)
+    if (!url) return '';
     if (url.startsWith('http')) return url;
+    if (url.startsWith('/')) return url;
     return `/${url}`;
 }
