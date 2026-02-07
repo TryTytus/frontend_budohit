@@ -1,4 +1,4 @@
-import { AdminSidebar } from "@/components/admin/admin-sidebar";
+import { AdminLayoutClient } from "@/components/admin/admin-layout-client";
 import { checkAdminAuth } from "@/lib/api";
 import { redirect } from "next/navigation";
 
@@ -16,13 +16,8 @@ export default async function AdminDashboardLayout({
     // Simplest: Just render layout. Page components fetch data and catch 401s.
 
     return (
-        <div className="flex min-h-screen bg-black text-zinc-100">
-            <AdminSidebar />
-            <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-                <div className="flex-1 overflow-auto p-8">
-                    {children}
-                </div>
-            </main>
-        </div>
+        <AdminLayoutClient>
+            {children}
+        </AdminLayoutClient>
     );
 }

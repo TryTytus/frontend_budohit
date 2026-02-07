@@ -12,6 +12,7 @@ export interface Category {
   parent_id?: number | null; // Keep for compatibility if used
   image?: string;
   children: Category[];
+  has_children?: boolean;
 }
 
 export interface ProductImage {

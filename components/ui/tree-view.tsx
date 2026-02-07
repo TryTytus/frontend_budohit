@@ -128,21 +128,21 @@ function TreeNodeItem({ node, onExpand, onSelect, selectedId, level }: TreeNodeI
             <div
                 className={cn(
                     "flex items-center py-1 px-2 hover:bg-zinc-800/50 rounded-md cursor-pointer transition-colors",
-                    selectedId === node.id && "bg-zinc-800",
+                    selectedId === node.id ? "bg-white text-black hover:bg-white/90" : "text-zinc-300",
                 )}
                 style={{ paddingLeft: `${level * 1.5}rem` }}
                 onClick={() => onSelect?.(node)}
             >
                 <div
                     className={cn(
-                        "p-1 rounded-sm hover:bg-zinc-700 mr-2 cursor-pointer",
-                        (!node.children && !node.hasChildren) && "opacity-0 pointer-events-none"
+                        "p-1 rounded-sm hover:bg-zinc-700/50 mr-2 cursor-pointer",
+                        (!node.children?.length && !node.hasChildren) && "opacity-0 pointer-events-none"
                     )}
                     onClick={handleExpand}
                 >
                     <ChevronRight className={cn("h-4 w-4 transition-transform", isOpen && "rotate-90")} />
                 </div>
-                {node.icon && <node.icon className="h-4 w-4 mr-2 text-zinc-400" />}
+                {node.icon && <node.icon className={cn("h-4 w-4 mr-2", selectedId === node.id ? "text-black" : "text-zinc-400")} />}
                 <span className="text-sm font-medium truncate">{node.name}</span>
             </div>
             {isOpen && node.children && (

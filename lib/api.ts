@@ -152,6 +152,25 @@ export async function deleteProduct(id: number): Promise<void> {
     if (!res.ok) throw new Error("Failed to delete product");
 }
 
+export async function createProductImage(formData: FormData): Promise<any> {
+    const res = await authorizedFetch(`${API_URL}/product-images/`, {
+        method: "POST",
+        body: formData,
+    });
+    if (!res.ok) throw new Error("Failed to upload image");
+    return res.json();
+}
+
+export async function updateProductImage(id: number, data: any): Promise<any> {
+    const res = await authorizedFetch(`${API_URL}/product-images/${id}/`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error("Failed to update image");
+    return res.json();
+}
+
 // --- Producers ---
 export async function getProducers(): Promise<any[]> { 
      const res = await fetch(`${API_URL}/producers/`);

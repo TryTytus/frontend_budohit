@@ -21,8 +21,8 @@ export default function AdminCategoriesPage() {
     const toTreeNode = (cat: Category): TreeNode => ({
         id: cat.id.toString(),
         name: cat.name,
-        children: [], // Initially empty, will load on expand
-        hasChildren: true, // Assuming true for now, or check backend count? Backend doesn't send count.
+        children: [],
+        hasChildren: cat.has_children,
         icon: Folder
     })
 

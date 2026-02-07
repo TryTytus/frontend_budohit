@@ -16,6 +16,12 @@ const Select = ({ children, value, onValueChange, defaultValue }: any) => {
     const [open, setOpen] = React.useState(false);
     const [currentValue, setCurrentValue] = React.useState(value || defaultValue || "");
 
+    React.useEffect(() => {
+        if (value !== undefined) {
+            setCurrentValue(value);
+        }
+    }, [value]);
+
     const handleValueChange = (newValue: string) => {
         setCurrentValue(newValue);
         if (onValueChange) onValueChange(newValue);
@@ -54,7 +60,7 @@ const SelectTrigger = React.forwardRef<
 const SelectValue = React.forwardRef<
     HTMLSpanElement,
     React.HTMLAttributes<HTMLSpanElement> & { placeholder?: string }
->(({ className, placeholder, ...props }, ref) => {
+>(({ className, placeholder, children, ...props }, ref) => {
     const context = React.useContext(SelectContext);
     return (
         <span
@@ -62,7 +68,7 @@ const SelectValue = React.forwardRef<
             className={cn("pointer-events-none", className)}
             {...props}
         >
-            {context?.value || placeholder}
+            {children || context?.value || placeholder}
         </span>
     )
 })

@@ -3,16 +3,19 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Product, Category } from "@/lib/types";
-import { getCategories, getProducers, createProduct, updateProduct } from "@/lib/api";
+import { getCategories, getProducers, createProduct, updateProduct, createProductImage, updateProductImage } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CategorySelector } from "@/components/admin/category-selector";
 import { SimpleEditor } from "@/components/tiptap-templates/simple/simple-editor";
 import { Loader2, ArrowLeft, Save, Upload } from "lucide-react";
 import Image from "next/image";
+import { ProductImageManager, ProductImage } from "./product-image-manager";
+import { useToast } from "@/components/ui/use-toast";
 
 interface ProductFormProps {
     product?: Product;
@@ -33,24 +36,53 @@ export function ProductForm({ product, isEdit = false }: ProductFormProps) {
     const [vat, setVat] = useState(product?.vat_value?.toString() || "23");
     const [categoryId, setCategoryId] = useState<string>(product?.category?.id?.toString() || "");
     const [producerId, setProducerId] = useState<string>(product?.producer?.id?.toString() || "");
-    const [imageFile, setImageFile] = useState<File | null>(null);
-    const [previewUrl, setPreviewUrl] = useState<string | null>(product?.images?.[0]?.url || null);
+    const [images, setImages] = useState<ProductImage[]>(product?.images?.map(img => ({ ...img, is_active: true })) || []);
+    const { toast } = useToast();
 
+    // Fetch data on mount
     useEffect(() => {
         const fetchData = async () => {
-            const [cats, prods] = await Promise.all([getCategories(), getProducers()]);
-            setCategories(cats);
-            setProducers(prods);
+            try {
+                const [cats, prods] = await Promise.all([
+                    getCategories(),
+                    getProducers()
+                ]);
+                setCategories(cats);
+                setProducers(prods);
+            } catch (err) {
+                console.error("Failed to load form data", err);
+                toast({
+                    title: "Błąd",
+                    description: "Nie udało się załadować danych formularza.",
+                    variant: "destructive"
+                });
+            }
         };
         fetchData();
     }, []);
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            setImageFile(file);
-            setPreviewUrl(URL.createObjectURL(file));
+    // Sync form state when product changes
+    useEffect(() => {
+        if (product) {
+            setName(product.name || "");
+            setCode(product.code || "");
+            setDescription(product.description || "");
+            setPriceNetto(product.price_netto || "");
+            setVat(product.vat_value?.toString() || "23");
+            setCategoryId(product.category?.id?.toString() || "");
+            // Handle producer object or ID if it were flattened (but types say object)
+            // Safety check for producer existence
+            setProducerId(product.producer?.id?.toString() || "");
+
+            if (product.images) {
+                setImages(product.images.map(img => ({ ...img, is_active: true })));
+            }
         }
+    }, [product]);
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        // Redundant with ProductImageManager, keeping for legacy single image if needed, or remove?
+        // User wants Image Manager. Let's redirect basic image usage to new manager.
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -68,33 +100,60 @@ export function ProductForm({ product, isEdit = false }: ProductFormProps) {
         formData.append("price_netto", priceNetto);
         formData.append("price_brutto", brutto);
         formData.append("vat_value", vat);
-        if (categoryId) formData.append("category", categoryId); // API expects ID for FK
-        if (producerId) formData.append("producer", producerId);
-
-        // Handle Image: If new file, use 'image' field expected by server-side logic (ModelViewSet handles nesting if properly set up but standard DRF CreateModelMixin expects field on model or separate handling)
-        // Wait, Product has prefetch_related('images'). Is it a related model or direct?
-        // Let's assume standard ProductImage management. Complex for Form Data.
-        // If Product model has 'image' field? No, it has `images` relation.
-        // Admin usually handles this by creating Product first then Image.
-        // OR: Backend serializer handles `images` field with upload.
-        // I'll append 'image' and hope backend handles it, or I'll implement a simple ProductImage creation loop.
-        // Assuming simple case: Backend serializer reads 'image' from request.FILES and creates ProductImage?
-        // Let's check serializer later. For now send it.
-        if (imageFile) {
-            formData.append("uploaded_image", imageFile); // Custom field name to detect in serializer
-        }
+        if (categoryId) formData.append("category_id", categoryId);
+        if (producerId) formData.append("producer_id", producerId);
 
         try {
+            let savedProduct: Product;
             if (isEdit && product) {
-                await updateProduct(product.id, formData);
+                savedProduct = await updateProduct(product.id, formData);
             } else {
-                await createProduct(formData);
+                savedProduct = await createProduct(formData);
             }
-            router.push("/admin-panel/products");
-            router.refresh();
+
+            // Handle Images via Promise.all
+            const imagePromises = images.map(async (img) => {
+                // New Image (negative ID)
+                if (img.id < 0 && img.file) {
+                    const imgFormData = new FormData();
+                    imgFormData.append("product", savedProduct.id.toString());
+                    imgFormData.append("uploaded_image", img.file);
+                    imgFormData.append("order", img.order.toString());
+                    imgFormData.append("is_active", "true");
+                    return createProductImage(imgFormData);
+                }
+                // Existing Image (update or soft delete)
+                else if (img.id > 0) {
+                    // Check if changed? Optimisation: only update if order or active changed.
+                    // For simplicity, update all metadata.
+                    return updateProductImage(img.id, {
+                        order: img.order,
+                        is_active: img.is_active
+                    });
+                }
+            });
+
+            await Promise.all(imagePromises);
+
+            toast({
+                title: "Sukces",
+                description: "Zapisano zmiany pomyślnie.",
+            });
+
+            // Reload to fetch updated state (IDs for new images etc)
+            if (!isEdit) {
+                router.push(`/admin-panel/products/${savedProduct.id}`);
+            } else {
+                router.refresh();
+            }
+
         } catch (err) {
             console.error(err);
-            alert("Błąd zapisu produktu.");
+            toast({
+                title: "Błąd",
+                description: "Wystąpił błąd podczas zapisu.",
+                variant: "destructive"
+            });
         } finally {
             setLoading(false);
         }
@@ -155,25 +214,7 @@ export function ProductForm({ product, isEdit = false }: ProductFormProps) {
                             <CardDescription>Zarządzaj zdjęciami produktu</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="grid grid-cols-1 gap-4">
-                                <div className="border-2 border-dashed border-white/10 rounded-lg p-8 flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors cursor-pointer bg-black/20"
-                                    onClick={() => document.getElementById('image-upload')?.click()}>
-                                    <input
-                                        id="image-upload" type="file" className="hidden" accept="image/*"
-                                        onChange={handleImageChange}
-                                    />
-                                    {previewUrl ? (
-                                        <div className="relative w-full h-64">
-                                            <Image src={previewUrl.startsWith('http') ? previewUrl : `/${previewUrl}`} alt="Preview" fill className="object-contain" />
-                                        </div>
-                                    ) : (
-                                        <>
-                                            <Upload className="w-8 h-8 text-zinc-500 mb-2" />
-                                            <p className="text-sm text-zinc-400">Kliknij aby dodać zdjęcie</p>
-                                        </>
-                                    )}
-                                </div>
-                            </div>
+                            <ProductImageManager images={images} setImages={setImages} />
                         </CardContent>
                     </Card>
                 </div>
@@ -214,22 +255,20 @@ export function ProductForm({ product, isEdit = false }: ProductFormProps) {
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
                                 <Label>Kategoria</Label>
-                                <Select value={categoryId} onValueChange={setCategoryId}>
-                                    <SelectTrigger className="bg-black border-white/10">
-                                        <SelectValue placeholder="Wybierz kategorię" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {categories.map((cat) => (
-                                            <SelectItem key={cat.id} value={cat.id.toString()}>{cat.name}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                <CategorySelector
+                                    value={categoryId}
+                                    onChange={setCategoryId}
+                                    placeholder="Wybierz kategorię"
+                                    initialLabel={product?.category?.name}
+                                />
                             </div>
                             <div className="space-y-2">
                                 <Label>Producent</Label>
                                 <Select value={producerId} onValueChange={setProducerId}>
                                     <SelectTrigger className="bg-black border-white/10">
-                                        <SelectValue placeholder="Wybierz producenta" />
+                                        <SelectValue placeholder="Wybierz producenta">
+                                            {producers.find(p => p.id.toString() === producerId)?.name || "Wybierz producenta"}
+                                        </SelectValue>
                                     </SelectTrigger>
                                     <SelectContent>
                                         {producers.map((prod) => (
