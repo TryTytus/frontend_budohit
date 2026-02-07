@@ -8,7 +8,8 @@ export interface Category {
   id: number;
   name: string;
   slug: string;
-  parent_id: number | null;
+  parent: number | null;
+  parent_id?: number | null; // Keep for compatibility if used
   image?: string;
   children: Category[];
 }

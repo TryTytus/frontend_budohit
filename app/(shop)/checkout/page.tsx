@@ -42,7 +42,6 @@ export default function CheckoutPage() {
     if (isSuccess) {
         return (
             <div className="min-h-screen flex flex-col">
-                <Header />
                 <main className="container flex-1 flex flex-col items-center justify-center py-12 text-center space-y-4">
                     <CheckCircle2 className="h-20 w-20 text-green-500" />
                     <h1 className="text-3xl font-bold">Dziękujemy za zamówienie!</h1>
@@ -62,7 +61,6 @@ export default function CheckoutPage() {
     if (items.length === 0) {
         return (
             <div className="min-h-screen flex flex-col">
-                <Header />
                 <main className="container flex-1 flex flex-col items-center justify-center py-12 text-center space-y-4">
                     <h1 className="text-2xl font-bold"> Twój koszyk jest pusty</h1>
                     <p className="text-muted-foreground">Dodaj produkty do koszyka, aby przejść do kasy.</p>
@@ -76,7 +74,6 @@ export default function CheckoutPage() {
 
     return (
         <div className="min-h-screen flex flex-col bg-slate-50/50">
-            <Header />
 
             <main className="container py-8 lg:py-12">
                 <div className="max-w-6xl mx-auto">

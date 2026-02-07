@@ -163,6 +163,16 @@ export async function getProducers(): Promise<any[]> {
      return [];
 }
 
+export async function getAdminCategories(parentId: string | null = null): Promise<Category[]> {
+    const url = parentId 
+        ? `${API_URL}/admin-categories/?parent=${parentId}`
+        : `${API_URL}/admin-categories/`; // Default to roots
+    
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("Failed to fetch categories");
+    return res.json();
+}
+
 export async function getProduct(id: string): Promise<Product> {
   const res = await fetch(`${API_URL}/products/${id}/`, {
     cache: "no-store",
