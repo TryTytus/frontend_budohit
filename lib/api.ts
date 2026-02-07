@@ -192,6 +192,34 @@ export async function getAdminCategories(parentId: string | null = null): Promis
     return res.json();
 }
 
+export async function createCategory(data: any): Promise<Category> {
+    const isFormData = data instanceof FormData;
+    const headers: HeadersInit = isFormData ? {} : { "Content-Type": "application/json" };
+    const body = isFormData ? data : JSON.stringify(data);
+
+    const res = await authorizedFetch(`${API_URL}/admin-categories/`, {
+        method: "POST",
+        headers,
+        body,
+    });
+    if (!res.ok) throw new Error("Failed to create category");
+    return res.json();
+}
+
+export async function updateCategory(id: number, data: any): Promise<Category> {
+    const isFormData = data instanceof FormData;
+    const headers: HeadersInit = isFormData ? {} : { "Content-Type": "application/json" };
+    const body = isFormData ? data : JSON.stringify(data);
+
+    const res = await authorizedFetch(`${API_URL}/admin-categories/${id}/`, {
+        method: "PATCH",
+        headers,
+        body,
+    });
+    if (!res.ok) throw new Error("Failed to update category");
+    return res.json();
+}
+
 export async function getProduct(id: string): Promise<Product> {
   const res = await fetch(`${API_URL}/products/${id}/`, {
     cache: "no-store",

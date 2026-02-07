@@ -12,7 +12,7 @@ interface CategoryCardProps {
 export function CategoryCard({ category }: CategoryCardProps) {
     // Placeholder image if none provided or invalid
     const imageSrc = category.image
-        ? (category.image.startsWith('http') ? category.image : `/${category.image}`)
+        ? (category.image.startsWith('http') || category.image.startsWith('/') ? category.image : `/${category.image}`)
         : "/placeholder.png";
 
     return (

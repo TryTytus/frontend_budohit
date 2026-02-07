@@ -70,9 +70,11 @@ export interface TreeNode {
     id: string
     name: string
     children?: TreeNode[]
+    parentId?: string | null // Added for hierarchy tracking
     hasChildren?: boolean // For lazy load indication
     expanded?: boolean // Controlled state
     icon?: LucideIcon
+    image?: string | null // Added for category image
 }
 
 export function TreeView({ data, onExpand, onSelect, selectedId, className }: TreeProps) {
