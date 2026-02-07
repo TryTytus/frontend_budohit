@@ -15,13 +15,18 @@ export default function AdminProductsPage() {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
     const router = useRouter();
 
     const fetchProducts = async () => {
         setLoading(true);
         try {
-            const data = await getProducts({ search });
+            const data = await getProducts({ search, page: page.toString() });
             setProducts(data.results);
+            // Calculate total pages (assuming page size of 20 from backend settings)
+            const count = data.count;
+            setTotalPages(Math.ceil(count / 20));
         } catch (error) {
             console.error(error);
         } finally {
@@ -31,7 +36,7 @@ export default function AdminProductsPage() {
 
     useEffect(() => {
         fetchProducts();
-    }, [search]); // Simple debounce could be added
+    }, [search, page]); // Simple debounce could be added
 
     const handleDelete = async (id: number) => {
         if (!confirm("Czy na pewno chcesz usunąć ten produkt?")) return;
@@ -69,7 +74,10 @@ export default function AdminProductsPage() {
                         placeholder="Szukaj produktu..."
                         className="pl-9 bg-black border-white/10 text-white"
                         value={search}
-                        onChange={(e) => setSearch(e.target.value)}
+                        onChange={(e) => {
+                            setSearch(e.target.value);
+                            setPage(1); // Reset to page 1 on search
+                        }}
                     />
                 </div>
                 <Button variant="outline" size="icon" onClick={fetchProducts}>
@@ -148,8 +156,29 @@ export default function AdminProductsPage() {
                 </Table>
             </div>
 
-            <div className="text-xs text-zinc-500 text-center">
-                Wyświetlono {products.length} produktów
+            {/* Pagination Controls */}
+            <div className="flex items-center justify-between text-white">
+                <div className="text-sm text-zinc-500">
+                    Strona {page} z {totalPages}
+                </div>
+                <div className="flex gap-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPage(p => Math.max(1, p - 1))}
+                        disabled={page === 1 || loading}
+                    >
+                        Poprzednia
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                        disabled={page === totalPages || loading}
+                    >
+                        Następna
+                    </Button>
+                </div>
             </div>
         </div>
     );
