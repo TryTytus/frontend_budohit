@@ -46,7 +46,9 @@ export default function AdminProductsPage() {
     // Helper url
     const processUrl = (url: string | undefined | null) => {
         if (!url) return '';
-        return url.startsWith('http') ? url : `/${url}`;
+        if (url.startsWith('http')) return url;
+        if (url.startsWith('/')) return url;
+        return `/${url}`;
     };
 
     return (
@@ -106,7 +108,7 @@ export default function AdminProductsPage() {
                                         <div className="relative w-10 h-10 rounded overflow-hidden bg-white border">
                                             {product.images?.[0] ? (
                                                 <Image
-                                                    src={processUrl(product.images[0].url)}
+                                                    src={processUrl(product.images[0].image_url)}
                                                     alt={product.name}
                                                     fill
                                                     className="object-contain p-0.5"

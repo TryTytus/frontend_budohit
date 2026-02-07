@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SimpleEditor } from "@/components/tiptap-templates/simple/simple-editor";
 import { Loader2, ArrowLeft, Save, Upload } from "lucide-react";
 import Image from "next/image";
 
@@ -138,11 +139,11 @@ export function ProductForm({ product, isEdit = false }: ProductFormProps) {
                                     className="bg-black border-white/10" required
                                 />
                             </div>
+
                             <div className="space-y-2">
                                 <Label>Opis</Label>
-                                <Textarea
-                                    value={description} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
-                                    className="min-h-[200px] bg-black border-white/10"
+                                <SimpleEditor
+                                    value={description} onChange={setDescription}
                                 />
                             </div>
                         </CardContent>
